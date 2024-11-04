@@ -14,10 +14,10 @@ class loan extends Model
     }
 
     public function device() : BelongsTo{
-        return $this->belongsTo(Device::class);   
+        return $this->belongsTo(Device::class);
     }
 
-    public function devolucion() : BelongsTo{
-        return $this->belongsTo (Devolucion::class);
+    public function devolucion() : HasOne{
+        return $this->hasOne (Devolucion::class);
     }
 }

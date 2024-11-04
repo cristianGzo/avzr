@@ -9,7 +9,7 @@ class Empleados extends Model
 {
     use HasFactory;
 
-    protected $table= 'Empleados';
+    protected $table= 'Employee';
 
     public function usuario() : HasOne
     {
@@ -18,5 +18,9 @@ class Empleados extends Model
 
     public function loan(): HasMany{
         return $this->hasMany(Loan::class);
+    }
+
+    public function department() : BelongsTo{
+        return $this->belongsTo(Department::class);
     }
 }

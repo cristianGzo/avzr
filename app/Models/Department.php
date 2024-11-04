@@ -6,14 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 
-class Brand extends Model
+class Department extends Model
 {
     use HasFactory;
 
-    protected $table = 'brand';
-    protected $fillable = ['name'];
-
-    public function model() : HasMany{
-        return $this->hasMany(Modelo::class);
+    public function empleado() : HasMany{
+        return $this->hasMany(Empleado::class);
     }
 }

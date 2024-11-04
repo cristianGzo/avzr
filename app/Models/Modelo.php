@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class Modelo extends Model
 {
     use HasFactory;
+    protected $table='model';
 
     public function brand(): BelongsTo{
         return $this->belongsTo(Brand::class);

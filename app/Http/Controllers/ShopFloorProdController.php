@@ -7,13 +7,15 @@ use Illuminate\Support\Facades\DB;
 
 class ShopFloorProdController extends Controller
 {
+
+    //obtiene los datos generales  para la tabla
     public function info(){
         $result = Mbctque::select([
-             'SERIAL_NUMBER'  
-            ,'BUILD_CODE'    
-            ,'CREATE_TS'  
-            ,'ShipSerial'   
-            ,'ShipLabelTimeStamp'        
+             'SERIAL_NUMBER'
+            ,'BUILD_CODE'
+            ,'CREATE_TS'
+            ,'ShipSerial'
+            ,'ShipLabelTimeStamp'
         ])
         //->where('ShipLabelTimeStamp', '>', '2024-09-04')
         ->where(DB::raw("SUBSTRING(build_code,1,2)"), '=', '9P')
@@ -34,9 +36,17 @@ class ShopFloorProdController extends Controller
         }
         return response()-> json(["data"=> $result], 200);
     }
+    //obtiene total por Dcab, total, etc.
+    public function totales(){
+    $results = Mbctque::selectRaw('SUBSTRING(BUILD_CODE, 1, 2) as Categoria, COUNT(*) as Total')
+        ->groupBy(DB::raw('SUBSTRING(BUILD_CODE, 1, 2)'))
+        ->orderBy('Categoria')
+        ->get();
 
+    return response()->json(["data"=> $results], 200);
+    }
 
-    public function filterInfo($year){
+    public function filterInfo($year=null){
         $result = (is_null($year) || $year=="")?
         Mbctque::all() :
         Mbctque::where('ShipLabelTimeStamp', $year)->get();
@@ -65,5 +75,7 @@ class ShopFloorProdController extends Controller
         }
         return response()-> json(["data"=> $result], 200);
     }
+
+
 
 }

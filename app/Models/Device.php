@@ -12,13 +12,13 @@ class Device extends Model
 
     public function modelo(): BelongsTo{
         return $this->belongsTo(Modelo::class);
-    } 
-
-    public function category() : BelongsTo{
-        return $this->hasOne(Category::class);
     }
 
-    public function loan(): HasOne{
-        return $this->hasOne(Loan::class);
+    public function category() : BelongsTo{
+        return $this->belongsTo(Category::class);
+    }
+
+    public function loan(): HasMany{
+        return $this->hasMany(Loan::class);
     }
 }

@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'sqlsrv_1'),
+    'default' => env('DB_CONNECTION', 'sqlsrv_2'),
 
     /*
     |--------------------------------------------------------------------------

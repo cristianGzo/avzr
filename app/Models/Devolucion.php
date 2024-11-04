@@ -9,7 +9,7 @@ class Devolucion extends Model
 {
     use HasFactory;
 
-    public function loan():HasOne {
-        return $this->hasOne(Loan::class);
+    public function loan():BelongsTo {
+        return $this->belongsTo(Loan::class);
     }
 }
