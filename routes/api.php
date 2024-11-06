@@ -25,7 +25,7 @@ Route::get('/report', [empleadosController::class, 'index'])->name("index");
 Route::get('/reports/{salary?}', [ShopFloorProdController::class, 'info'])->name("api.reports");
 Route::get('/year', [ShopFloorProdController::class, 'year'])->name("api.year");
 Route::get('/filter/{year?}', [ShopFloorProdController::class, 'filterInfo'])->name("filter");
-Route::get('/total', [ShopFloorProdController::class, 'validateDate'])->name("total");
+Route::get('/total', [ShopFloorProdController::class, 'totales'])->name("total");
 //Route::get('/employees', [empleadosController::class, 'employees'])->name("employees");
 
 

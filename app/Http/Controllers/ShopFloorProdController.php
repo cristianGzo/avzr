@@ -9,7 +9,18 @@ class ShopFloorProdController extends Controller
 {
 
     //obtiene los datos generales  para la tabla
-    public function info(){
+    public function info(Request $request){
+
+        $vData = $this->validateDate($request);
+
+        $startDate = $vData['start_date'];
+        $endDate = $vData['end_date'];
+        $startTime = $vData['start_time'] ?? '00:00:00';
+        $endTime = $vData['end_time'] ?? '23:59:59';
+
+        $startDateTime = "$startDate $startTime";
+        $endDateTime = "$endDate $endTime";
+
         $result = Mbctque::select([
              'SERIAL_NUMBER'
             ,'BUILD_CODE'
@@ -17,11 +28,12 @@ class ShopFloorProdController extends Controller
             ,'ShipSerial'
             ,'ShipLabelTimeStamp'
         ])
+        ->whereBetween('CREATE_TS', [$startDateTime, $endDateTime])
         //->where('ShipLabelTimeStamp', '>', '2024-09-04')
-        ->where(DB::raw("SUBSTRING(build_code,1,2)"), '=', '9P')
-        ->where('ShipSerial', '!=', 'null')
-        ->where(DB::raw("SUBSTRING(build_code,18,1)"), '=', 'C')
-        ->where(DB::raw("SUBSTRING(build_code,4,1)"), '=', 'X')
+        //->where(DB::raw("SUBSTRING(build_code,1,2)"), '=', '9P')
+        //->where('ShipSerial', '!=', 'null')
+        //->where(DB::raw("SUBSTRING(build_code,18,1)"), '=', 'C')
+        //->where(DB::raw("SUBSTRING(build_code,4,1)"), '=', 'X')
         ->orderBy('ShipLabelTimeStamp', 'desc')
         ->distinct()
         ->get();
@@ -37,40 +49,36 @@ class ShopFloorProdController extends Controller
         return response()-> json(["data"=> $result], 200);
     }
     //obtiene total por Dcab, total, etc.
-    public function totales($startDate, $endDate, $startTime = null, $endTime = null){
-        $startDateTime = $startDate . ' ' . ($startTime ?? '00:00:00');
-        $endDateTime = $endDate . ' ' . ($endTime ?? '23:59:59');
+    public function totales(Request $request){
+        $vData = $this->validateDate($request);
 
-    $results = Mbctque::selectRaw('SUBSTRING(BUILD_CODE, 1, 2) as Categoria, COUNT(*) as Total')
-        ->whereBetween('CREATE_TS', [$startDateTime, $endDateTime])
-        ->groupBy(DB::raw('SUBSTRING(BUILD_CODE, 1, 2)'))
-        ->orderBy('Categoria')
-        ->get();
+        $startDate = $vData['start_date'];
+        $endDate = $vData['end_date'];
+        $startTime = $vData['start_time'] ?? '00:00:00';
+        $endTime = $vData['end_time'] ?? '23:59:59';
 
-    return  $results;
+        $startDateTime = "$startDate $startTime";
+        $endDateTime = "$endDate $endTime";
+
+        $results = Mbctque::selectRaw('SUBSTRING(BUILD_CODE, 1, 2) as Categoria, COUNT(*) as Total')
+            ->whereBetween('CREATE_TS', [$startDateTime, $endDateTime])
+            ->groupBy(DB::raw('SUBSTRING(BUILD_CODE, 1, 2)'))
+            ->orderBy('Categoria')
+            ->get();
+
+        return response()-> json(["data"=> $results], 200);;
     }
 
-    public function validateDate(Request $request)
-    {
+    public function validateDate(Request $request){
 
-        $request->validate([
+        $vData = $request->validate([
             'start_date' => 'required|date',
             'end_date' => 'required|date',
             'start_time' => 'nullable|date_format:H:i:s',
             'end_time' => 'nullable|date_format:H:i:s',
         ]);
 
-
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
-        $startTime = $request->input('start_time');
-        $endTime = $request->input('end_time');
-
-
-        $totals = $this->totales($startDate, $endDate, $startTime, $endTime);
-
-
-        return response()->json(["data"=> $totals], 200);
+        return $vData;
     }
 
 
