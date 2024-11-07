@@ -26,6 +26,8 @@ Route::get('/reports/{salary?}', [ShopFloorProdController::class, 'info'])->name
 Route::get('/year', [ShopFloorProdController::class, 'year'])->name("api.year");
 Route::get('/filter/{year?}', [ShopFloorProdController::class, 'filterInfo'])->name("filter");
 Route::get('/total', [ShopFloorProdController::class, 'totales'])->name("total");
+Route::get('/dProx', [ShopFloorProdController::class, 'dProx'])->name("dProx");
+Route::get('/mProx', [ShopFloorProdController::class, 'mProx'])->name("mProx");
 //Route::get('/employees', [empleadosController::class, 'employees'])->name("employees");
 
 
