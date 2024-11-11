@@ -62,9 +62,12 @@ class ShopFloorProdController extends Controller{
 
         $results = Mbctque::selectRaw('SUBSTRING(BUILD_CODE, 1, 2) as Categoria, COUNT(*) as Total')
             ->whereBetween('CREATE_TS', [$startDateTime, $endDateTime])
+            ->whereIn(DB::Raw("SUBSTRING(BUILD_CODE,18,1)"), ['C', 'T', 'B'])
             ->groupBy(DB::raw('SUBSTRING(BUILD_CODE, 1, 2)'))
             ->orderBy('Categoria')
             ->get();
+
+
 
         return response()-> json(["data"=> $results], 200);;
     }
