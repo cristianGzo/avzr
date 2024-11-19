@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SalesProjection extends Model
 {
     use HasFactory;
+    protected $table = 'salesProjection';
     public function productionCategory(): BelongsTo{
         return $this->belongsTo(ProductionCategory::class);
     }

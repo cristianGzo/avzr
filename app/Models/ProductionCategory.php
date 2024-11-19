@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ProductionCategory extends Model
 {
     use HasFactory;
+    protected $table = 'productionCategory';
 
     public function salesProjection(): HasMany{
         return $this->hasMany(SalesProjection::class);

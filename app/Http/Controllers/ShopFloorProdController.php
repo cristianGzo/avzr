@@ -69,7 +69,7 @@ class ShopFloorProdController extends Controller{
 
 
 
-        return response()-> json(["data"=> $results], 200);;
+        return response()-> json(["data"=> $results], 200);
     }
 
     public function validateDate(Request $request){
@@ -140,6 +140,72 @@ class ShopFloorProdController extends Controller{
 
     }
 
+    //SW filtros alex
+    public function tacoma(Request $request){
+        $vData = $this->validateDate($request);
+
+        $startDate = $vData['start_date'];
+        $endDate = $vData['end_date'];
+        $startTime = $vData['start_time'] ?? '00:00:00';
+        $endTime = $vData['end_time'] ?? '23:59:59';
+
+        $startDateTime = "$startDate $startTime";
+        $endDateTime = "$endDate $endTime";
+        $tableName = (new Mbctque)->getTable();
+
+        $result=Mbctque::selectRaw("
+        BUILD_CODE,
+        COUNT(*) AS count_total,
+        COUNT(*) * 100.0 / NULLIF(
+            (SELECT COUNT(*) FROM {$tableName}
+             WHERE CREATE_TS BETWEEN ? AND ?
+
+             AND (
+             (SUBSTRING(BUILD_CODE, 3, 1) = 'C' AND SUBSTRING(BUILD_CODE, 9, 1) = '2' AND SUBSTRING(BUILD_CODE, 6, 1) IN ('M', 'B', 'X')
+             AND SUBSTRING(BUILD_CODE, 13, 1) = 'C' AND SUBSTRING(BUILD_CODE, 14, 1) = '-' AND SUBSTRING(BUILD_CODE, 10, 1) = '-')
+
+             OR (SUBSTRING(BUILD_CODE, 3, 1) = 'C' AND SUBSTRING(BUILD_CODE, 9, 1) = '2' AND SUBSTRING(BUILD_CODE, 6, 1) IN ('M', 'B', 'X')
+              AND SUBSTRING(BUILD_CODE, 13, 1) = 'C' AND SUBSTRING(BUILD_CODE, 14, 1) = '-' AND SUBSTRING(BUILD_CODE, 10, 1) = '3')
+
+              OR (SUBSTRING(BUILD_CODE, 3, 1) = 'C' AND SUBSTRING(BUILD_CODE, 9, 1) = '2' AND SUBSTRING(BUILD_CODE, 6, 1) IN ('M', 'B', 'X')
+              AND SUBSTRING(BUILD_CODE, 13, 1) = 'C' AND SUBSTRING(BUILD_CODE, 14, 1) = '-' AND SUBSTRING(BUILD_CODE, 10, 1) = '-'
+              AND SUBSTRING(BUILD_CODE, 18, 1) = 'B')
+             )),
+            0
+        ) AS percent_total
+        ", [$startDateTime, $endDateTime])
+        ->whereBetween('CREATE_TS', [$startDateTime, $endDateTime])
+        ->where(function ($query) {
+            $query->whereRaw("
+        (SUBSTRING(BUILD_CODE, 3, 1) = 'C' AND SUBSTRING(BUILD_CODE, 9, 1) = '2'
+        AND SUBSTRING(BUILD_CODE, 6, 1) IN ('M', 'B', 'X')
+        AND SUBSTRING(BUILD_CODE, 13, 1) = 'C' AND SUBSTRING(BUILD_CODE, 14, 1) = '-'
+        AND SUBSTRING(BUILD_CODE, 10, 1) = '-')
+
+        OR
+
+        (SUBSTRING(BUILD_CODE, 3, 1) = 'C' AND SUBSTRING(BUILD_CODE, 9, 1) = '2'
+        AND SUBSTRING(BUILD_CODE, 6, 1) IN ('M', 'B', 'X')
+        AND SUBSTRING(BUILD_CODE, 13, 1) = 'C' AND SUBSTRING(BUILD_CODE, 14, 1) = '-'
+        AND SUBSTRING(BUILD_CODE, 10, 1) = '3')
+
+        OR
+
+        (SUBSTRING(BUILD_CODE, 3, 1) = 'C' AND SUBSTRING(BUILD_CODE, 9, 1) = '2'
+        AND SUBSTRING(BUILD_CODE, 6, 1) IN ('M', 'B', 'X')
+        AND SUBSTRING(BUILD_CODE, 13, 1) = 'C' AND SUBSTRING(BUILD_CODE, 14, 1) = '-'
+        AND SUBSTRING(BUILD_CODE, 10, 1) = '-')
+        ");
+        })
+        ->groupBy('BUILD_CODE')
+        ->get();
+        return response()-> json(["data"=> $result], 200);
+    }
+
+
+
+
+
 
     public function filterInfo($year=null){
         $result = (is_null($year) || $year=="")?
@@ -148,7 +214,7 @@ class ShopFloorProdController extends Controller{
 
     return response()->json(["data"=>$result]);
     }
-
+    /*
     public function year() {
         $result = DB::table('SHOPFLOOR_PRODUCT_INSTANCE')->distinct()
         ->select('SHOPFLOOR_PRODUCT_INSTANCE_ID as id', 'ShipLabelTimeStamp as text')
@@ -169,7 +235,9 @@ class ShopFloorProdController extends Controller{
             return response()->json($data, 404);
         }
         return response()-> json(["data"=> $result], 200);
-    }
+    }*/
+
+
 
 
 

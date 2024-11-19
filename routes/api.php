@@ -9,6 +9,8 @@ use App\Http\Controllers\ShopFloorProdController;
 use App\Http\Controllers\ModeloController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\RolController;
+use App\Http\Controllers\ProductionCategoryController;
+use App\Http\Controllers\SalesProjectionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,6 +30,14 @@ Route::get('/filter/{year?}', [ShopFloorProdController::class, 'filterInfo'])->n
 Route::get('/total', [ShopFloorProdController::class, 'totales'])->name("total");
 Route::get('/dProx', [ShopFloorProdController::class, 'dProx'])->name("dProx");
 Route::get('/mProx', [ShopFloorProdController::class, 'mProx'])->name("mProx");
+
+Route::get('/tcma', [ShopFloorProdController::class, 'tacoma'])->name("tacoma");
+
+
+//PARA GRAFICOS DE PROYECCION
+Route::get('/getCat', [ProductionCategoryController::class, 'getCategory'])->name("getCat"); //para select
+Route::post('/create', [salesProjectionController::class, 'create'])->name("create");
+Route::get('/salesProjection', [salesProjectionController::class, 'getProjection'])->name("salesProjection");
 //Route::get('/employees', [empleadosController::class, 'employees'])->name("employees");
 
 

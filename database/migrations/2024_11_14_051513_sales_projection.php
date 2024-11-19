@@ -16,6 +16,7 @@ return new class extends Migration
             $table->id();
             $table->DateTime("startDate");
             $table->DateTime("endDate");
+            $table->integer("value");
             $table->unsignedBigInteger('productionCategoryId');
             $table->foreign('productionCategoryId')->references('id')->on('productionCategory');
             $table->timestamps();
