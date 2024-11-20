@@ -67,8 +67,6 @@ class ShopFloorProdController extends Controller{
             ->orderBy('Categoria')
             ->get();
 
-
-
         return response()-> json(["data"=> $results], 200);
     }
 
@@ -201,10 +199,27 @@ class ShopFloorProdController extends Controller{
         ->get();
         return response()-> json(["data"=> $result], 200);
     }
+    //SW total proyeccion
+    public function totalesProyeccion(Request $request){
+        $vData = $this->validateDate($request);
 
+        $startDate = $vData['start_date'];
+        $endDate = $vData['end_date'];
+        $startTime = $vData['start_time'] ?? '00:00:00';
+        $endTime = $vData['end_time'] ?? '23:59:59';
 
+        $startDateTime = "$startDate $startTime";
+        $endDateTime = "$endDate $endTime";
 
+        $results = Mbctque::selectRaw('SUBSTRING(BUILD_CODE, 1, 2) as Categoria, COUNT(*) as Total')
+            ->whereBetween('CREATE_TS', [$startDateTime, $endDateTime])
+            ->whereIn(DB::Raw("SUBSTRING(BUILD_CODE,18,1)"), ['C', 'T', 'B'])
+            ->groupBy(DB::raw('SUBSTRING(BUILD_CODE, 1, 2)'))
+            ->orderBy('Categoria')
+            ->get();
 
+        return response()-> json(["data"=> $results], 200);
+    }
 
 
     public function filterInfo($year=null){
