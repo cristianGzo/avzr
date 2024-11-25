@@ -18,7 +18,7 @@ class Mbctque extends Model
         return $this->hasOne(Usuario::class, 'idEmpleado');
     }
 
-    protected $table= 'SHOPFLOOR_PRODUCT_INSTANCE';
+    protected $table= 'prueba.dbo.SHOPFLOOR_PRODUCT_INSTANCE';
 
     /*protected $fillable = [
         'name',

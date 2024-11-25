@@ -7,13 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 
-class Rol extends Model
+class WeeksModel extends Model
 {
     use HasFactory;
 
-    protected $table='rol';
+    protected $table='weeks';
 
-    public function usuario(): HasMany{
-        return $this->hasMany(Usuario::class);
+    public function salesProjection(): HasMany{
+        return $this->hasMany(SalesProjection::class);
     }
+
 }

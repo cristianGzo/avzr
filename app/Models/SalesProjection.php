@@ -10,7 +10,12 @@ class SalesProjection extends Model
 {
     use HasFactory;
     protected $table = 'salesProjection';
+
     public function productionCategory(): BelongsTo{
         return $this->belongsTo(ProductionCategory::class);
+    }
+
+    public function weeks(): BelongsTo{
+        return $this->belongsTo(WeeksModel::class);
     }
 }

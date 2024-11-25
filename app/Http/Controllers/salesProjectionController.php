@@ -31,7 +31,7 @@ class salesProjectionController extends Controller
             return response()->json(['success' => true, 'message' => 'Projection created']);
         }
     }
-
+    //este fue sustituido por el get en Weeks
     public function getProjection(){
         $response=SalesProjection::selectRaw(
             'id, value,

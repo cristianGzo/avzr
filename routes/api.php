@@ -11,6 +11,7 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\ProductionCategoryController;
 use App\Http\Controllers\SalesProjectionController;
+use App\Http\Controllers\WeeksController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,7 +41,7 @@ Route::post('/create', [salesProjectionController::class, 'create'])->name("crea
 Route::get('/salesProjection', [salesProjectionController::class, 'getProjection'])->name("salesProjection");
 //Route::get('/employees', [empleadosController::class, 'employees'])->name("employees");
 
-
+Route::get('/week', [WeeksController::class, 'get'])->name("getWeek");
 
 /*Route::get('/report', [empleadosController::class, 'index'])->name("index");
 Route::get('/reports/{salary?}', [empleadosController::class, 'reports'])->name("api.reports");

@@ -21,14 +21,34 @@ class ShopFloorProdController extends Controller{
         $startDateTime = "$startDate $startTime";
         $endDateTime = "$endDate $endTime";
 
-        $result = Mbctque::select([
-             'SERIAL_NUMBER'
-            ,'BUILD_CODE'
-            ,'CREATE_TS'
-            ,'ShipSerial'
-            ,'ShipLabelTimeStamp'
-        ])
+        $tableName = (new Mbctque)->getTable();
+
+        $result = DB::table($tableName)
+        ->selectRaw(
+             'SERIAL_NUMBER
+            ,BUILD_CODE
+            ,CREATE_TS
+            ,ShipSerial
+            ,ShipLabelTimeStamp'
+        )
         ->whereBetween('CREATE_TS', [$startDateTime, $endDateTime])
+        ->where(function ($query) {
+            $query->where(function ($subQuery) {
+                $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) = ?', ['9P'])
+                         ->whereRaw('SUBSTRING(BUILD_CODE, 18, 1) = ?', ['C'])
+                         ->whereNotNull('ShipSerial');
+            })
+            ->orWhere(function ($subQuery) {
+                $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) = ?', ['9D'])
+                         ->whereRaw('SUBSTRING(BUILD_CODE, 18, 1) = ?', ['T']);
+                         //->where('COMMS_STATUS_ID', 50);
+            })
+            ->orWhere(function ($subQuery) {
+                $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) = ?', ['9B'])
+                         ->whereRaw('SUBSTRING(BUILD_CODE, 18, 1) = ?', ['T']);
+                         //->where('COMMS_STATUS_ID', 50);
+            });
+        })
         //->where('ShipLabelTimeStamp', '>', '2024-09-04')
         //->where(DB::raw("SUBSTRING(build_code,1,2)"), '=', '9P')
         //->where('ShipSerial', '!=', 'null')
@@ -59,10 +79,26 @@ class ShopFloorProdController extends Controller{
 
         $startDateTime = "$startDate $startTime";
         $endDateTime = "$endDate $endTime";
+        $tableName = (new Mbctque)->getTable();
 
-        $results = Mbctque::selectRaw('SUBSTRING(BUILD_CODE, 1, 2) as Categoria, COUNT(*) as Total')
+        $results = DB::table($tableName)
+        ->selectRaw('SUBSTRING(BUILD_CODE, 1, 2) AS Categoria, COUNT(*) as Total')
             ->whereBetween('CREATE_TS', [$startDateTime, $endDateTime])
-            ->whereIn(DB::Raw("SUBSTRING(BUILD_CODE,18,1)"), ['C', 'T', 'B'])
+            ->whereRaw('SUBSTRING(BUILD_CODE,1,2) IN (?, ?, ?)', ['9P', '9D', 'OS'])
+            ->where(function($query){
+                $query->where(function($subQuery){
+                    $subQuery->whereRaw('SUBSTRING(BUILD_CODE,1,2) = ?', ['9P'])
+                             ->whereRaw('SUBSTRING(BUILD_CODE,18,1) = ?', ['C'] )
+                             ->whereNotNull('ShipSerial');
+                })
+                ->orWhere(function ($subQuery) {
+                    $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) = ?', ['9D'])
+                             ->whereRaw('SUBSTRING(BUILD_CODE, 18, 1) = ?', ['T']);
+                             //->where('COMMS_STATUS_ID', 50); //
+                });
+            })
+
+            //->whereIn(DB::Raw("SUBSTRING(BUILD_CODE,18,1)"), ['C', 'T', 'B'])
             ->groupBy(DB::raw('SUBSTRING(BUILD_CODE, 1, 2)'))
             ->orderBy('Categoria')
             ->get();
@@ -71,14 +107,12 @@ class ShopFloorProdController extends Controller{
     }
 
     public function validateDate(Request $request){
-
         $vData = $request->validate([
             'start_date' => 'required|date',
             'end_date' => 'required|date',
             'start_time' => 'nullable|date_format:H:i:s',
             'end_time' => 'nullable|date_format:H:i:s',
         ]);
-
         return $vData;
     }
 
