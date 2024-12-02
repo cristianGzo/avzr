@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\SalesProjection;
+use Carbon\Carbon;
+
 
 class salesProjectionController extends Controller
 {
@@ -61,5 +63,19 @@ class salesProjectionController extends Controller
             ->get();
 
         return response()-> json(["data"=> $results], 200);
+    }
+
+//trae el valor, idCategoria, startWeek y endWeek
+    public function getTest(){
+        $results = SalesProjection::with(['weeks', 'productionCategory'])->get()->map(function ($total) {
+            return [
+                'value' => $total->value,
+                'category' => $total->productionCategory ? $total-> productionCategory->name : 'sin categoria',
+                'startW' => $total->weeks ? Carbon::parse($total->weeks->startDate)->format('Y-m-d'): 'Sin fecha de inicio',
+                'endW' => $total->weeks ? Carbon::parse($total->weeks->endDate)->format('Y-m-d') : 'Sin fecha de fin',
+            ];
+        });
+
+        return response()->json(["data"=>$results], 200);
     }
 }

@@ -43,6 +43,8 @@ Route::get('/salesProjection', [salesProjectionController::class, 'getProjection
 
 Route::get('/week', [WeeksController::class, 'get'])->name("getWeek");
 
+Route::get('/weekTest', [SalesProjectionController::class, 'getTest'])->name("getWeek");
+
 /*Route::get('/report', [empleadosController::class, 'index'])->name("index");
 Route::get('/reports/{salary?}', [empleadosController::class, 'reports'])->name("api.reports");
 Route::get('/salaries', [empleadosController::class, 'salaries'])->name("api.salaries");

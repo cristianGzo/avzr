@@ -168,6 +168,7 @@ class ShopFloorProdController extends Controller{
        ->orderBy('Color', 'desc')
        ->distinct()
        ->get();
+
        return response()-> json(["data"=> $result], 200);
 
     }

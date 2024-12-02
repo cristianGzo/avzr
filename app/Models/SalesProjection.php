@@ -12,10 +12,10 @@ class SalesProjection extends Model
     protected $table = 'salesProjection';
 
     public function productionCategory(): BelongsTo{
-        return $this->belongsTo(ProductionCategory::class);
+        return $this->belongsTo(ProductionCategory::class,  'productionCategoryId', 'id');
     }
 
     public function weeks(): BelongsTo{
-        return $this->belongsTo(WeeksModel::class);
+        return $this->belongsTo(WeeksModel::class, 'weekId', 'id');
     }
 }

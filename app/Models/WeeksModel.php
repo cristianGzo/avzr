@@ -14,7 +14,7 @@ class WeeksModel extends Model
     protected $table='weeks';
 
     public function salesProjection(): HasMany{
-        return $this->hasMany(SalesProjection::class);
+        return $this->hasMany(SalesProjection::class, 'weekId', 'id');
     }
 
 }
