@@ -150,6 +150,37 @@ class ShopFloorProdController extends Controller{
        return response()-> json(["data"=> $result], 200);
 
     }
+    //SW prox R&B creados en un mes
+    public function mCreateProx(Request $request){
+        $vData = $this->validateDate($request);
+
+        $startDate = $vData['start_date'];
+        $endDate = $vData['end_date'];
+        $startTime = $vData['start_time'] ?? '00:00:00';
+        $endTime = $vData['end_time'] ?? '23:59:59';
+
+        $startDateTime = "$startDate $startTime";
+        $endDateTime = "$endDate $endTime";
+
+
+
+        $result = Mbctque::select(
+            DB::raw('CONVERT(DATE, CREATE_TS,112) as dia '),
+            DB::raw('SUBSTRING(BUILD_CODE, 4, 1) as Color'),
+            DB::raw('COUNT(ShipLabelTimeStamp) as Total
+          '))
+       ->whereBetween('CREATE_TS', [$startDateTime, $endDateTime])
+       ->where(DB::raw("SUBSTRING(build_code,1,2)"), '=', '9P')
+       //->where('ShipSerial', '!=', 'null')
+       ->where(DB::raw("SUBSTRING(build_code,18,1)"), '=', 'C')
+       //->where(DB::raw("SUBSTRING(build_code,4,1)"), '=', 'X')
+       ->groupBy(DB::raw('CONVERT(DATE, CREATE_TS,112)'),DB::raw('SUBSTRING(BUILD_CODE, 4, 1)'))
+       ->orderBy('dia', 'asc')
+       //->distinct()
+       ->get();
+       return response()-> json(["data"=> $result], 200);
+
+    }
 
     //SW prox R&B dia actual *
     public function dProx(){
@@ -170,7 +201,28 @@ class ShopFloorProdController extends Controller{
        ->get();
 
        return response()-> json(["data"=> $result], 200);
+    }
 
+    //current week prox
+    public function wProx(){
+        $startWeek = Carbon::now()->startOfWeek()->format('Y-m-d');
+        $endWeek= Carbon::now();
+
+        $result = Mbctque::selectRaw('
+          SUBSTRING(BUILD_CODE, 4, 1) as Color,
+          COUNT(*) as Total')
+       //->whereBetween('CREATE_TS', [$startDateTime, $endDateTime])
+       ->whereBetween('ShipLabelTimeStamp',  [$startWeek, $endWeek])
+       ->where(DB::raw("SUBSTRING(build_code,1,2)"), '=', '9P')
+       //->where('ShipSerial', '!=', 'null')
+       //->where(DB::raw("SUBSTRING(build_code,18,1)"), '=', 'C')
+       //->where(DB::raw("SUBSTRING(build_code,4,1)"), '=', 'X')
+       ->groupBy(DB::raw('SUBSTRING(BUILD_CODE, 4, 1)'))
+       ->orderBy('Color', 'desc')
+       ->distinct()
+       ->get();
+
+       return response()-> json(["data"=> $result], 200);
     }
 
     //SW filtros alex

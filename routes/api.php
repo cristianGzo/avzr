@@ -31,6 +31,8 @@ Route::get('/filter/{year?}', [ShopFloorProdController::class, 'filterInfo'])->n
 Route::get('/total', [ShopFloorProdController::class, 'totales'])->name("total");
 Route::get('/dProx', [ShopFloorProdController::class, 'dProx'])->name("dProx");
 Route::get('/mProx', [ShopFloorProdController::class, 'mProx'])->name("mProx");
+Route::get('/mCreatedProx', [ShopFloorProdController::class, 'mCreateProx'])->name("mCreateProx");
+Route::get('/wProx', [ShopFloorProdController::class, 'wProx'])->name("wProx");
 
 Route::get('/tcma', [ShopFloorProdController::class, 'tacoma'])->name("tacoma");
 
@@ -44,6 +46,8 @@ Route::get('/salesProjection', [salesProjectionController::class, 'getProjection
 Route::get('/week', [WeeksController::class, 'get'])->name("getWeek");
 
 Route::get('/weekTest', [SalesProjectionController::class, 'getTest'])->name("getWeek");
+
+
 
 /*Route::get('/report', [empleadosController::class, 'index'])->name("index");
 Route::get('/reports/{salary?}', [empleadosController::class, 'reports'])->name("api.reports");
