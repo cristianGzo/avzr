@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\SalesProjection;
 use Carbon\Carbon;
+use App\Models\WeeksModel;
+
 
 
 class salesProjectionController extends Controller
@@ -33,6 +35,44 @@ class salesProjectionController extends Controller
             return response()->json(['success' => true, 'message' => 'Projection created']);
         }
     }
+
+    //create1_T
+    public function createT(Request $request) {
+    if ($request->isMethod('post')) {
+        $request->validate([
+            'startDate' => 'required|date',
+            'endDate' => 'required|date',
+            'categories' => 'required|array',
+            'categories.*.categoryId' => 'required|integer',
+            'categories.*.value' => 'required|integer',
+        ], [
+            'startDate.required' => 'Proporciona fecha inicio',
+            'endDate.required' => 'Proporciona fecha fin',
+            'categories.required' => 'Proporciona las categorías y valores',
+            'categories.*.categoryId.required' => 'Proporciona el ID de la categoría',
+            'categories.*.value.required' => 'Proporciona el valor',
+        ]);
+
+        // Insertar en la tabla weeks
+        $week = new WeeksModel();
+        $week->startDate = $request->input('startDate');
+        $week->endDate = $request->input('endDate');
+        $week->save();
+
+        // Insertar en la tabla projection
+        foreach ($request->input('categories') as $category) {
+            $projection = new SalesProjection();
+            $projection->weekId = $week->id;
+            $projection->productioncategoryId = $category['categoryId'];
+            $projection->value = $category['value'];
+            $projection->save();
+        }
+
+        return response()->json(['success' => true, 'message' => 'Projections created successfully']);
+    }
+}
+
+
     //este fue sustituido por el get en Weeks
     public function getProjection(){
         $response=SalesProjection::selectRaw(

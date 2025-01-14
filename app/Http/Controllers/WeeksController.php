@@ -35,14 +35,5 @@ class WeeksController extends Controller
         return response()->json(["data"=>$result], 200);
     }
 
-    public function getTest(){
-        $results = WeeksModel::with('weeks')->get()->map(function ($total) {
-            return [
-                'Total' => $total->total,
-                'Semana' => "{$total->semana->inicio} - {$total->semana->fin}",
-            ];
-        });
-
-        return response()->json($results);
-    }
+    
 }

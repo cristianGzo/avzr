@@ -26,6 +26,8 @@ use App\Http\Controllers\WeeksController;
 //Rutas tabla Reportes
 Route::get('/report', [empleadosController::class, 'index'])->name("index");
 Route::get('/reports/{salary?}', [ShopFloorProdController::class, 'info'])->name("api.reports");
+Route::get('/borrar/{salary?}', [ShopFloorProdController::class, 'principalTableServer'])->name("api.reports");
+
 Route::get('/year', [ShopFloorProdController::class, 'year'])->name("api.year");
 Route::get('/filter/{year?}', [ShopFloorProdController::class, 'filterInfo'])->name("filter");
 Route::get('/total', [ShopFloorProdController::class, 'totales'])->name("total");
@@ -39,7 +41,7 @@ Route::get('/tcma', [ShopFloorProdController::class, 'tacoma'])->name("tacoma");
 
 //PARA GRAFICOS DE PROYECCION
 Route::get('/getCat', [ProductionCategoryController::class, 'getCategory'])->name("getCat"); //para select
-Route::post('/create', [salesProjectionController::class, 'create'])->name("create");
+Route::post('/create', [salesProjectionController::class, 'createT'])->name("create");
 Route::get('/salesProjection', [salesProjectionController::class, 'getProjection'])->name("salesProjection");
 //Route::get('/employees', [empleadosController::class, 'employees'])->name("employees");
 

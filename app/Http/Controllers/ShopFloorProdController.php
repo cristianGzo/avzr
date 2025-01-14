@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
+use Illuminate\Support\Facades\Log;
+
 class ShopFloorProdController extends Controller{
 
     //obtiene los datos generales  para la tabla
@@ -84,7 +86,7 @@ class ShopFloorProdController extends Controller{
         $results = DB::table($tableName)
         ->selectRaw('SUBSTRING(BUILD_CODE, 1, 2) AS Categoria, COUNT(*) as Total')
             ->whereBetween('CREATE_TS', [$startDateTime, $endDateTime])
-            ->whereRaw('SUBSTRING(BUILD_CODE,1,2) IN (?, ?, ?)', ['9P', '9D', 'OS'])
+            ->whereRaw('SUBSTRING(BUILD_CODE,1,2) IN (?, ?, ?, ?)', ['9P', '9D', 'OS', '9B'])
             ->where(function($query){
                 $query->where(function($subQuery){
                     $subQuery->whereRaw('SUBSTRING(BUILD_CODE,1,2) = ?', ['9P'])
@@ -93,6 +95,16 @@ class ShopFloorProdController extends Controller{
                 })
                 ->orWhere(function ($subQuery) {
                     $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) = ?', ['9D'])
+                             ->whereRaw('SUBSTRING(BUILD_CODE, 18, 1) = ?', ['T']);
+                             //->where('COMMS_STATUS_ID', 50); //
+                })
+                ->orWhere(function ($subQuery) {
+                    $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) = ?', ['OS'])
+                             ->whereRaw('SUBSTRING(BUILD_CODE, 18, 1) = ?', ['C']);
+                             //->where('COMMS_STATUS_ID', 50); //
+                })
+                ->orWhere(function ($subQuery) {
+                    $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) = ?', ['9B'])
                              ->whereRaw('SUBSTRING(BUILD_CODE, 18, 1) = ?', ['T']);
                              //->where('COMMS_STATUS_ID', 50); //
                 });
@@ -339,6 +351,143 @@ class ShopFloorProdController extends Controller{
         return response()-> json(["data"=> $result], 200);
     }*/
 
+
+
+    public function principalTableServer(Request $request){
+
+        $vData = $this->validateDate($request);
+
+        $startDate = $vData['start_date'];
+        $endDate = $vData['end_date'];
+        $startTime = $vData['start_time'] ?? '00:00:00';
+        $endTime = $vData['end_time'] ?? '23:59:59';
+        $filter1and2 = $request->input('filter1and2', null);
+        $filterPos3 = $request->input('filterPos3', null);
+        $filterPos7 = $request->input('filterPos7', null);
+        $filterPos9= $request->input('filterPos9', null);
+        $filterPos13= $request->input('filterPos13', null);
+        $filterPos10= $request->input('filterPos10', null);
+        $filterPos18= $request->input('filterPos18', null);
+
+        $startDateTime = "$startDate $startTime";
+        $endDateTime = "$endDate $endTime";
+
+        $tableName = (new Mbctque)->getTable();
+
+
+        $totalWithoutFilters = DB::table($tableName)
+    ->where(function ($query) use ($startDateTime, $endDateTime) {
+        $query->where(function ($subQuery) use ($startDateTime, $endDateTime) {
+            $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) = ?', ['9P'])
+                     ->whereRaw('SUBSTRING(BUILD_CODE, 18, 1) = ?', ['C'])
+                     ->whereBetween('ShipLabelTimeStamp', [$startDateTime, $endDateTime]);
+        })
+        ->orWhere(function ($subQuery) use ($startDateTime, $endDateTime) {
+            $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) IN (?, ?)', ['9D', '9B'])
+                     ->whereRaw('SUBSTRING(BUILD_CODE, 18, 1) = ?', ['T'])
+                     ->whereBetween('CREATE_TS', [$startDateTime, $endDateTime]);
+        });
+    })
+    ->count();
+
+
+
+        $result = DB::table($tableName)
+        ->selectRaw(
+             'SERIAL_NUMBER
+            ,BUILD_CODE
+            ,CREATE_TS
+            ,ShipSerial
+            ,ShipLabelTimeStamp'
+        )
+
+         ->where(function ($query) use ($startDateTime, $endDateTime) {
+            $query->where(function ($subQuery) use ($startDateTime, $endDateTime) {
+                $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) = ?', ['9P'])
+                    ->whereBetween('ShipLabelTimeStamp', [$startDateTime, $endDateTime]);
+            })
+            ->orWhere(function ($subQuery) use ($startDateTime, $endDateTime) {
+                $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) != ?', ['9P'])
+                    ->whereBetween('CREATE_TS', [$startDateTime, $endDateTime]);
+            });
+        });
+
+        if ($filter1and2 || $filterPos3 || $filterPos7 || $filterPos9 || $filterPos13 || $filterPos10 || $filterPos18) {
+            $result->where(function ($subQuery) use ($filter1and2, $filterPos3, $filterPos7 ,$filterPos9, $filterPos13 , $filterPos10, $filterPos18) {
+                if ($filter1and2) {
+                    $subQuery->where(function ($filterQuery) use ($filter1and2) {
+                        if ($filter1and2 === '9P') {
+                            $filterQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) = ?', [$filter1and2])
+                                ->whereRaw('SUBSTRING(BUILD_CODE, 18, 1) = ?', ['C'])
+                                ->whereNotNull('ShipSerial');
+                        } elseif (in_array($filter1and2, ['9B', '9D'])) {
+                            $filterQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) = ?', [$filter1and2])
+                                ->whereRaw('SUBSTRING(BUILD_CODE, 18, 1) = ?', ['T']);
+                        } else {
+                            $filterQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) = ?', [$filter1and2]);
+                        }
+                    });
+                }
+                if ($filterPos3) {
+                    $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 3, 1) = ?', [$filterPos3]);
+                }
+                if ($filterPos7) {
+                    $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 7, 1) = ?', [$filterPos7]);
+                }
+                if ($filterPos9) {
+                    $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 9, 1) = ?', [$filterPos9]);
+                }
+                if ($filterPos13) {
+                    $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 13, 1) = ?', [$filterPos13]);
+                }
+                if ($filterPos10) {
+                    $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 10, 1) = ?', [$filterPos10]);
+                }
+                if ($filterPos18) {
+                    $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 18, 1) = ?', [$filterPos18]);
+                }
+            });
+        } else {
+
+
+            $result->where(function ($query) {
+            $query->where(function ($subQuery) {
+                $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) = ?', ['9P'])
+                         ->whereRaw('SUBSTRING(BUILD_CODE, 18, 1) = ?', ['C'])
+                         ->whereNotNull('ShipSerial');
+            })
+            ->orWhere(function ($subQuery) {
+                $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) = ?', ['9D'])
+                         ->whereRaw('SUBSTRING(BUILD_CODE, 18, 1) = ?', ['T']);
+                         //->where('COMMS_STATUS_ID', 50);
+            })
+            ->orWhere(function ($subQuery) {
+                $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) = ?', ['9B'])
+                         ->whereRaw('SUBSTRING(BUILD_CODE, 18, 1) = ?', ['T']);
+                         //->where('COMMS_STATUS_ID', 50);
+            });
+        });
+        Log::info('Consulta SQL generada:', ['sql' => $result->toSql()]);
+    }
+
+        $results = $result->orderBy('ShipLabelTimeStamp', 'desc')->get();
+
+        /*->orderBy('ShipLabelTimeStamp', 'desc')
+        ->distinct()
+        ->get();*/
+        //dd($result);
+
+        if($results-> isEmpty()){
+            $data=[
+                'message' => 'Sin data',
+                'status ' => 404
+            ];
+            return response()->json($data, 404);
+        }
+        return response()-> json([
+            'totalWithoutFilters' => $totalWithoutFilters,
+            "data"=> $results], 200);
+    }
 
 
 
