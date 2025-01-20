@@ -9,6 +9,8 @@ use App\Models\WeeksModel;
 
 class WeeksController extends Controller
 {
+
+
     //
     public function create(Request $request){
         if($request->isMethod('post')){
@@ -29,11 +31,13 @@ class WeeksController extends Controller
         }
     }
 
+    //llena el select de proyecciones
     public function get(){
-        $result=WeeksModel::selectRaw('CONVERT(DATE, startDate) as startDate, CONVERT(DATE, endDate) as endDate')
+        $result=WeeksModel::selectRaw('CONVERT(DATE, startDate) as startW, CONVERT(DATE, endDate) as endW')
+        ->distinct()
         ->get();
         return response()->json(["data"=>$result], 200);
     }
 
-    
+
 }

@@ -24,9 +24,9 @@ use App\Http\Controllers\WeeksController;
 |
 */
 //Rutas tabla Reportes
-Route::get('/report', [empleadosController::class, 'index'])->name("index");
+Route::get('/report', [empleadosController::class, 'index'])->name("index"); //este ya no se usa, era el que llenaba tabla principal
 Route::get('/reports/{salary?}', [ShopFloorProdController::class, 'info'])->name("api.reports");
-Route::get('/borrar/{salary?}', [ShopFloorProdController::class, 'principalTableServer'])->name("api.reports");
+Route::get('/borrar/{salary?}', [ShopFloorProdController::class, 'principalTableServer'])->name("api.reports"); //ahora este llena tabla principal
 
 Route::get('/year', [ShopFloorProdController::class, 'year'])->name("api.year");
 Route::get('/filter/{year?}', [ShopFloorProdController::class, 'filterInfo'])->name("filter");
@@ -43,11 +43,13 @@ Route::get('/tcma', [ShopFloorProdController::class, 'tacoma'])->name("tacoma");
 Route::get('/getCat', [ProductionCategoryController::class, 'getCategory'])->name("getCat"); //para select
 Route::post('/create', [salesProjectionController::class, 'createT'])->name("create");
 Route::get('/salesProjection', [salesProjectionController::class, 'getProjection'])->name("salesProjection");
+Route::get('/proyeccion', [ShopFloorProdController::class, 'proyeccion'])->name("proyeccion");
+
 //Route::get('/employees', [empleadosController::class, 'employees'])->name("employees");
 
-Route::get('/week', [WeeksController::class, 'get'])->name("getWeek");
+Route::get('/week', [WeeksController::class, 'get'])->name("getWeek"); //este obtiene las semanas para select de proyecciones
 
-Route::get('/weekTest', [SalesProjectionController::class, 'getTest'])->name("getWeek");
+Route::get('/weekTest', [SalesProjectionController::class, 'getTest'])->name("getWeek"); //obtiene cat, value y id de week de proyeccion
 
 
 

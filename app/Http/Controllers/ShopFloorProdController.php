@@ -117,6 +117,68 @@ class ShopFloorProdController extends Controller{
 
         return response()-> json(["data"=> $results], 200);
     }
+    public function proyeccion(Request $request){
+
+
+        $vData = $this->validateDate($request);
+
+        $startDate = $vData['start_date'];
+        $endDate = $vData['end_date'];
+        $startTime = $vData['start_time'] ?? '00:00:00';
+        $endTime = $vData['end_time'] ?? '23:59:59';
+
+        $startDateTime = "$startDate $startTime";
+        $endDateTime = "$endDate $endTime";
+        $tableName = (new Mbctque)->getTable();
+
+        $results = DB::table($tableName)
+        ->selectRaw("
+            CASE
+                WHEN SUBSTRING(BUILD_CODE, 1, 2) IN ('9P', '9D', '9B') THEN 'Seats'
+                WHEN SUBSTRING(BUILD_CODE, 1, 2) = 'OS' THEN 'OHS'
+
+                ELSE SUBSTRING(BUILD_CODE, 1, 2)
+            END AS Categoria,
+            COUNT(*) as Total
+        ")
+        ->whereBetween('CREATE_TS', [$startDateTime, $endDateTime])
+        ->where(function ($query) {
+                $query->where(function($subQuery){
+                    $subQuery->whereRaw('SUBSTRING(BUILD_CODE,1,2) = ?', ['9P'])
+                             ->whereRaw('SUBSTRING(BUILD_CODE,18,1) = ?', ['C'] )
+                             ->whereNotNull('ShipSerial');
+                })
+                ->orWhere(function ($subQuery) {
+                    $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) = ?', ['9D'])
+                             ->whereRaw('SUBSTRING(BUILD_CODE, 18, 1) = ?', ['T']);
+                             //->where('COMMS_STATUS_ID', 50); //
+                })
+                ->orWhere(function ($subQuery) {
+                    $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) = ?', ['OS'])
+                             ->whereRaw('SUBSTRING(BUILD_CODE, 18, 1) = ?', ['C']);
+                             //->where('COMMS_STATUS_ID', 50); //
+                })
+                ->orWhere(function ($subQuery) {
+                    $subQuery->whereRaw('SUBSTRING(BUILD_CODE, 1, 2) = ?', ['9B'])
+                             ->whereRaw('SUBSTRING(BUILD_CODE, 18, 1) = ?', ['T']);
+                             //->where('COMMS_STATUS_ID', 50); //
+                });
+
+            })
+
+            //->whereIn(DB::Raw("SUBSTRING(BUILD_CODE,18,1)"), ['C', 'T', 'B'])
+            ->groupBy(DB::raw("
+            CASE
+                WHEN SUBSTRING(BUILD_CODE, 1, 2) IN ('9P', '9D', '9B') THEN 'Seats'
+                WHEN SUBSTRING(BUILD_CODE, 1, 2) = 'OS' THEN 'OHS'
+                ELSE SUBSTRING(BUILD_CODE, 1, 2)
+            END
+        "))
+            ->orderBy('Categoria')
+            ->get();
+
+        return response()-> json(["data"=> $results], 200);
+    }
 
     public function validateDate(Request $request){
         $vData = $request->validate([
@@ -487,6 +549,27 @@ class ShopFloorProdController extends Controller{
         return response()-> json([
             'totalWithoutFilters' => $totalWithoutFilters,
             "data"=> $results], 200);
+    }
+
+
+    //Servicios para total proX por hora
+
+    public function horaTotalProX (){
+        $currentDate = Carbon::today()->format('Y-m-d');
+
+        $response= Mbctque::selectRaw('
+            ShipLabelTimeStamp as Time,
+            count (*) as Total
+        ')
+        ->where('ShipLabelTimeStamp', '=',  $currentDate)
+       ->where(DB::raw("SUBSTRING(build_code,1,2)"), '=', '9P')
+       //->where('ShipSerial', '!=', 'null')
+       //->where(DB::raw("SUBSTRING(build_code,18,1)"), '=', 'C')
+       //->where(DB::raw("SUBSTRING(build_code,4,1)"), '=', 'X')
+       ->groupBy(DB::raw('ShipLabelTimeStamp'))
+       ->orderBy('Total', 'desc')
+       ->distinct()
+       ->get();
     }
 
 
